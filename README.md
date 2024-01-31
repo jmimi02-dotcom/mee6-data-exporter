@@ -5,7 +5,7 @@ the original code for this functionality can be found in [this repository](https
 
 ## To-Do
 
-- [ ] Paginate the Mee6 API. As of writing, this program will only return page 0 containg the first 100 users in the guild.
+- [ ] Potentially use goroutines to implement concurrency and write data as each page is being fetched?
 - [ ] Write a fancy TUI using [Charm](https://charm.sh/) that guides users through the process.
 
 ## Installation

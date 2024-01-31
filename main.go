@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -125,6 +126,24 @@ func GetGuildInfo(id int, page int) (Response, error) {
 	return jsonr, nil
 }
 
+// Increment the page number
+func CrawlGuild(id int) ([]Response, error) {
+	var responses []Response
+	for i := 0; i >= 0; i++ {
+		log.Printf("Requesting %d %d \n ", id, i)
+		data, err := GetGuildInfo(id, i)
+		if err != nil {
+			log.Println(err)
+		}
+		if len(data.Players) == 0 {
+			break
+		}
+		responses = append(responses, data)
+		time.Sleep(2 * time.Second)
+	}
+	return responses, nil
+}
+
 // Using prepared statements is best practice for security reasons.
 func prepareUserDataStatement(tx *sql.Tx) (*sql.Stmt, error) {
 	stmt, err := tx.Prepare("INSERT INTO userdata (user_id, avatar, discriminator, message_count, monetize_xp_boost, username, xp, level) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
@@ -200,10 +219,17 @@ func commitTransaction(tx *sql.Tx) {
 
 func main() {
 	_, tx := prepareDB()
-	guild, e := GetGuildInfo(guildID, 0)
-	if e != nil {
-		log.Println(e)
+	/*
+		guild, e := GetGuildInfo(guildID, 0)
+		if e != nil {
+			log.Println(e)
+		}
+		guild.Insert(tx)
+	*/
+
+	pages, _ := CrawlGuild(guildID)
+	for _, page := range pages {
+		page.Insert(tx)
 	}
-	guild.Insert(tx)
 	commitTransaction(tx)
 }
