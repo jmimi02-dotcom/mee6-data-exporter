@@ -2,4 +2,4 @@ module mee6xport
 
 go 1.19
 
-require github.com/mattn/go-sqlite3 v1.14.20 // indirect
+require github.com/mattn/go-sqlite3 v1.14.20
