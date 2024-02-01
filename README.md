@@ -7,6 +7,7 @@ the original code for this functionality can be found in [this repository](https
 
 - [ ] Potentially use goroutines to implement concurrency and write data as each page is being fetched?
 - [ ] Write a fancy TUI using [Charm](https://charm.sh/) that guides users through the process.
+- [ ] Implement tests.
 
 ## Installation
 
