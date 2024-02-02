@@ -1,12 +1,8 @@
 package ui
 
-// Launch the program
-func CreateProgram() {
-	program := tea.NewProgram(initialModel())
-	if _, err := program.Run(); err != nil {
-		fmt.Println("Failed to launch the program:", err)
-	}
-}
+import (
+	tea "github.com/charmbracelet/bubbletea"
+)
 
 func setEntered(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	// If the enter key has been presssed while an input hasn't been entered, return the spinner view

@@ -7,10 +7,10 @@ import (
 
 // Creates a new Loading Spinner
 func Spinner() spinner.Model {
-        var spinner spinner.Model
-	spinner = spinner.New()
-	spinner.Spinner = spinner.Dot
+        var spinnerComponent spinner.Model
+	spinnerComponent = spinner.New()
+	spinnerComponent .Spinner = spinner.Dot
 	// ANSI-256 Colour Code for Aqua https://github.com/charmbracelet/lipgloss
-	spinner.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("86"))
-	return spinner
+	spinnerComponent .Style = lipgloss.NewStyle().Foreground(lipgloss.Color("86"))
+	return spinnerComponent 
 }

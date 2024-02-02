@@ -1,13 +1,17 @@
 package ui
 
 import (
+	"fmt"
 	"mee6xport/ui/components"
+        "regexp"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/muesli/reflow/indent"
 )
 
+// This holds the application state
 type model struct {
 	TextInput    textinput.Model
 	Spinner      spinner.Model
@@ -62,5 +66,17 @@ func (m model) View() string {
 	} else {
 		s = spinnerView(m)
 	}
-	return indent.String(fmt.Sprintf("\n%s"\n\n", s), 2)
+	return indent.String(fmt.Sprintf("\n%s\n\n", s), 2)
 }
+
+
+func (m model) isValidDiscordGuildID() bool {
+	// Regular Expression returns true for digits with a length of 17-19 characters. 
+	/*
+	TODO: Double check discord snowflake length
+	Recently increased to 19 but check that this length is consistent across guilds and not variable
+	*/
+	regex, _ := regexp.Compile("\\d{17,19}")
+	return regex.MatchString(m.TextInput.Value())
+}
+
