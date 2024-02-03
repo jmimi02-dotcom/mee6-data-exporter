@@ -3,7 +3,7 @@ package ui
 import (
 	"fmt"
 	"mee6xport/ui/components"
-        "regexp"
+	"regexp"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -69,14 +69,12 @@ func (m model) View() string {
 	return indent.String(fmt.Sprintf("\n%s\n\n", s), 2)
 }
 
-
 func (m model) isValidDiscordGuildID() bool {
-	// Regular Expression returns true for digits with a length of 17-19 characters. 
+	// Regular Expression returns true for digits with a length of 17-19 characters.
 	/*
-	TODO: Double check discord snowflake length
-	Recently increased to 19 but check that this length is consistent across guilds and not variable
+		TODO: Double check discord snowflake length
+		Recently increased to 19 but check that this length is consistent across guilds and not variable
 	*/
 	regex, _ := regexp.Compile("\\d{17,19}")
 	return regex.MatchString(m.TextInput.Value())
 }
-
