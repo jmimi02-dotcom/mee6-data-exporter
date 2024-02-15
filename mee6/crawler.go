@@ -3,8 +3,13 @@ package mee6
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"path/filepath"
+
+	// "log"
 	"net/http"
+	"os"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -18,22 +23,71 @@ func GetGuildInfo(id int, page int) (Response, error) {
 	// For more options we should instead use http.Client instead of http.Get
 	resp, err := http.Get(endpoint)
 	if err != nil {
+		log.Println("Error while GET:", err)
 		return Response{}, err
 	}
-	err = json.NewDecoder(resp.Body).Decode(&jsonr)
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		log.Println("Error while reading response body:", body)
+		return Response{}, err
+	}
+
+	err = json.Unmarshal(body, &jsonr)
+	if err != nil {
+		log.Println("Error while JSON decoding:", err)
+		// Print the raw response body for debugging
+		fmt.Println("Raw Response Body:", string(body))
 		return Response{}, err
 	}
 	return jsonr, nil
 }
 
+func MockGetInfo(id int, page int) (Response, error) {
+	//log.Printf("MockGetInfo called with id: %d, page: %d\n", id, page)
+
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Fatal("Error getting working directory:", err)
+		return Response{}, err
+	}
+
+	// Construct the full path to the JSON file
+	dir := filepath.Join(wd, "mock", fmt.Sprintf("%d.json", page))
+
+	file, err := os.Open(dir)
+	if err != nil {
+		return Response{}, err
+	}
+	defer file.Close()
+
+	// Read the content of the file
+	content, err := ioutil.ReadAll(file)
+	if err != nil {
+		return Response{}, err
+	}
+
+	// Unmarshal the JSON content into a struct
+	var person Response
+	err = json.Unmarshal(content, &person)
+	if err != nil {
+		return Response{}, err
+	}
+	return person, nil
+
+}
+
 // Increment the page number
 func CrawlGuild(id int) ([]Response, error) {
 	var responses []Response
-	for i := 0; i >= 0; i++ {
-		log.Printf("Requesting %d %d \n ", id, i)
-		data, err := GetGuildInfo(id, i)
+	for i := 0; i < 2; i++ {
+		log.Println("Iterating")
+		// log.Printf("Requesting %d %d \n ", id, i)
+		//data, err := GetGuildInfo(id, i)
+		data, err := MockGetInfo(id, i)
 		if err != nil {
+			log.Println("Faced an Error while decoding JSON!")
 			log.Println(err)
 		}
 		if len(data.Players) == 0 {

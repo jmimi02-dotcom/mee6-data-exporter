@@ -11,7 +11,7 @@ import (
 var guildID = /* Change this value as per README.md */ 1234
 
 func main() {
-       //ui.LaunchProgram()
+        //ui.LaunchProgram()
 	_, tx := db.PrepareDB()
 	pages, _ := mee6.CrawlGuild(guildID)
 	for _, page := range pages {
