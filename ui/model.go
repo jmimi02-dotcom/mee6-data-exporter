@@ -5,8 +5,7 @@ import (
 	"mee6xport/mee6"
 	"mee6xport/ui/components"
 	"regexp"
-
-	//"time"
+	"time"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -24,7 +23,7 @@ type model struct {
 	CurrentStatus string
 
 	StartGenerating  bool
-	Channel          chan mee6.Response // where we'll receive activity notifications
+	Channel          chan mee6.Response
 	CurrentPage      int
 	ContinueCrawling bool
 }
@@ -40,10 +39,9 @@ func (m model) Listen() tea.Cmd {
 				if err != nil {
 					fmt.Println(err)
 				}
-				// time.Sleep(time.Second)
+				time.Sleep(time.Second)
 				m.Channel <- x
 			}
-			//fmt.Println("Crawling Finished")
 			m.ContinueCrawling = false
 			m.Finished = true
 			return nil
@@ -92,21 +90,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.TextInput, _ = m.TextInput.Update(msg)
 	case responseMsg:
-		m.CurrentStatus = fmt.Sprintf("Crawling %d", m.CurrentPage)
 		if m.ContinueCrawling {
+			m.CurrentStatus = fmt.Sprintf("Crawling %d", m.CurrentPage)
 			m.CurrentPage++
-			// fmt.Println(m.ContinueCrawling)
 			return m, waitForActivity(m.Channel)
 		}
+		m.Finished = true
 		return m, nil
 	}
 
 	// If an input hasn't been entered, watch for the enter key being pressed
-
 	if !m.InputEntered && !m.Finished {
 		return setEntered(msg, m)
 	}
 
+	// If an input has been entered, start calling the mee6 api
 	if m.InputEntered && !m.Finished {
 		if m.StartGenerating {
 			return m, nil
@@ -114,10 +112,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.StartGenerating = false
 			return m, m.Listen()
 		}
-	}
-
-	if m.InputEntered && m.Finished {
-		return setFinished(msg, m)
 	}
 
 	var cmd tea.Cmd
@@ -135,22 +129,9 @@ func (m model) View() string {
 
 	s = inputView(m)
 
-	if m.InputEntered && m.Finished {
-		s = completedView(m)
-	} else if m.InputEntered && !m.Finished {
+	if m.InputEntered {
 		s = spinnerView(m)
 	}
-
-	/*
-		if m.Finished && m.InputEntered && !m.ContinueCrawling {
-
-			s = completedView(m)
-		}
-
-		if m.InputEntered && !m.Finished {
-			s = spinnerView(m)
-		}
-	*/
 
 	return indent.String(fmt.Sprintf("\n%s\n\n", s), 2)
 }
