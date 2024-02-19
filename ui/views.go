@@ -27,10 +27,6 @@ func inputView(m model) string {
 }
 
 func spinnerView(m model) string {
-	if m.CurrentStatus == "Crawling 1" {
-		return "\nFini\n"
-	} else {
-		label := m.Spinner.View() + "Querying Mee6 data for Discord Guild " + m.TextInput.Value() + "\nStatus: " + m.CurrentStatus
-		return "\n\n" + label
-	}
+	label := m.Spinner.View() + "Querying Mee6 data for Discord Guild " + m.TextInput.Value() + "\nStatus: " + m.CurrentStatus
+	return "\n\n" + label
 }

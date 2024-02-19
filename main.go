@@ -3,7 +3,7 @@ package main
 import (
 	"mee6xport/db"
 	"mee6xport/mee6"
-        //"mee6xport/ui"
+        "mee6xport/ui"
 
 	_ "github.com/mattn/go-sqlite3"
 )

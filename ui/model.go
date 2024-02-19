@@ -18,44 +18,41 @@ type model struct {
 	TextInput     textinput.Model
 	Spinner       spinner.Model
 	InputEntered  bool
-	Finished      bool
 	Quitting      bool
 	CurrentStatus string
 
-	StartGenerating  bool
-	Channel          chan mee6.Response
-	CurrentPage      int
+	StartGenerating bool
+	Channel         chan mee6.Response
+	CurrentPage     int
+
+	// Both of these booleans represent the same event.
+	Finished         bool
 	ContinueCrawling bool
 }
 
 func (m model) Listen() tea.Cmd {
-	if m.ContinueCrawling {
-		return func() tea.Msg {
-			for i := 0; i < 2; i++ {
-				// At the time of writing I've been rate limited by the API, oops!
-				// As such, we're having to reply on cached API responses I have stored in the /mock folder
-				x, err := mee6.MockGetInfo(1234, i)
-				//fmt.Println(i)
-				if err != nil {
-					fmt.Println(err)
-				}
+	return func() tea.Msg {
+		for i := 0; !m.Finished; i++ {
+			// At the time of writing I've been rate limited by the API, oops!
+			// As such, we're having to reply on cached API responses I have stored in the /mock folder
+			x, err := mee6.MockGetInfo(1234, i)
+			if err == nil {
 				time.Sleep(time.Second)
 				m.Channel <- x
+			} else {
+				time.Sleep(time.Second)
+				m.ContinueCrawling = false
+				m.Finished = true
 			}
-			m.ContinueCrawling = false
-			m.Finished = true
-			return nil
 		}
-	} else {
 		return nil
 	}
 }
 
-type responseMsg mee6.Response
-
 func waitForActivity(ch chan mee6.Response) tea.Cmd {
 	return func() tea.Msg {
-		return responseMsg(<-ch)
+		incomingMessage := mee6.Response(<-ch)
+		return incomingMessage
 	}
 }
 
@@ -89,13 +86,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 		m.TextInput, _ = m.TextInput.Update(msg)
-	case responseMsg:
+	case mee6.Response:
 		if m.ContinueCrawling {
-			m.CurrentStatus = fmt.Sprintf("Crawling %d", m.CurrentPage)
-			m.CurrentPage++
+			m.CurrentStatus = fmt.Sprintf("Crawling %d", msg.Page)
 			return m, waitForActivity(m.Channel)
 		}
-		m.Finished = true
 		return m, nil
 	}
 
@@ -116,9 +111,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	var cmd tea.Cmd
 	m.Spinner, cmd = m.Spinner.Update(msg)
-
 	return m, tea.Batch(cmd, m.Spinner.Tick)
-
 }
 
 func (m model) View() string {
@@ -142,6 +135,6 @@ func (m model) isValidDiscordGuildID() bool {
 		TODO: Double check discord snowflake length
 		Recently increased to 19 but check that this length is consistent across guilds and not variable
 	*/
-	regex, _ := regexp.Compile("\\d{17,19}")
+	regex, _ := regexp.Compile(`\d{17,19}`)
 	return regex.MatchString(m.TextInput.Value())
 }
