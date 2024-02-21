@@ -45,8 +45,6 @@ func GetGuildInfo(id int, page int) (Response, error) {
 }
 
 func MockGetInfo(id int, page int) (Response, error) {
-	//log.Printf("MockGetInfo called with id: %d, page: %d\n", id, page)
-
 	wd, err := os.Getwd()
 	if err != nil {
 		log.Fatal("Error getting working directory:", err)
@@ -81,14 +79,11 @@ func MockGetInfo(id int, page int) (Response, error) {
 // Increment the page number
 func CrawlGuild(id int) ([]Response, error) {
 	var responses []Response
-	for i := 0; i < 2; i++ {
+	for i := 0; i >= 0; i++ {
 		log.Println("Iterating")
-		// log.Printf("Requesting %d %d \n ", id, i)
-		//data, err := GetGuildInfo(id, i)
-		data, err := MockGetInfo(id, i)
+		data, err := GetGuildInfo(id, i)
 		if err != nil {
-			log.Println("Faced an Error while decoding JSON!")
-			log.Println(err)
+			return responses, err
 		}
 		if len(data.Players) == 0 {
 			break
